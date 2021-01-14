@@ -1,5 +1,5 @@
 -- nest
--- @swbain
+-- @pavlovsfrog
 --
 -- utilities for norns + crow
 -- each crow output can be either a clock division/multiplication or a lfo
