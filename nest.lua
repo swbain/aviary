@@ -11,6 +11,8 @@
 
 OUTPUTS = 4
 
+GATE_ACTION = "{to(5,0),to(0,0.05)}"
+
 selected_output = 1
 
 output_modes = {"clock div", "lfo"}
@@ -25,6 +27,9 @@ function init()
   for i = 1, 32 do
     div_values[i] = i
   end
+  
+  init_crow()
+  init_clock()
 end
 
 function redraw()
@@ -60,5 +65,33 @@ function enc(n, d)
   elseif n == 3 then
     selected_divs[selected_output] = math.min(#div_values, (math.max(selected_divs[selected_output] + d, 1)))
   end
+  update_crow_action()
   redraw()
+end
+
+function update_crow_action()
+  if selected_output_modes[selected_output] == 1 then
+    crow.output[selected_output].action = GATE_ACTION
+  else
+    crow.output[selected_output].action = "to(0,0.05)"
+  end
+end
+
+function init_crow() 
+  for i = 1, OUTPUTS do
+    crow.output[i].action = GATE_ACTION
+  end
+end
+
+function init_clock()
+  for i = 1, OUTPUTS do
+    clock.run(run_clock, i)
+  end
+end
+
+function run_clock(output)
+  while true do
+    clock.sync(selected_divs[output])
+    crow.output[output].execute()
+  end
 end
