@@ -14,7 +14,7 @@ selected_output_modes = {1, 1, 1, 1}
 function redraw()
   screen.clear()
   local options = {"out 1", "out 2", "out 3", "out 4"}
-  for i = 1,#options do
+  for i = 1, #options do
     screen.level(selected_output == i and 15 or 3)
     
     local y = 12 + 10 * i
