@@ -2,14 +2,18 @@
 -- @pavlovsfrog
 --
 -- utilities for norns + crow
--- each crow output can be either a clock division/multiplication or a lfo
--- lfos can be free or clock synced
+-- use crow outputs for
+-- clock div and lfos
+-- 
+-- btn 2: select crow output
+-- enc 2: select output type
+-- enc 3: select rate
 
 OUTPUTS = 4
 
 selected_output = 1
 
-output_modes = {"lfo", "clock div"}
+output_modes = {"clock div", "lfo"}
 
 selected_output_modes = {1, 1, 1, 1}
 
