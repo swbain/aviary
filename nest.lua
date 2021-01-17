@@ -42,7 +42,7 @@ function redraw()
     
     local y = 12 + 10 * i
     
-    screen.move (24 ,y)
+    screen.move(24, y)
     screen.text_center(output_modes[selected_output_modes[i]])
     
     screen.move(64, y)
