@@ -23,6 +23,8 @@ div_values = {}
 
 selected_divs = {1, 1, 1, 1}
 
+clock_ids = {}
+
 function init()
   for i = 1, 32 do
     div_values[i] = i
@@ -66,6 +68,8 @@ function enc(n, d)
     selected_divs[selected_output] = math.min(#div_values, (math.max(selected_divs[selected_output] + d, 1)))
   end
   update_crow_action()
+  clock.cancel(clock_ids[selected_output])
+  clock_ids[selected_output] = clock.run(run_clock, selected_output)
   redraw()
 end
 
@@ -90,7 +94,7 @@ end
 
 function init_clock()
   for i = 1, OUTPUTS do
-    clock.run(run_clock, i)
+    clock_ids[i] = clock.run(run_clock, i)
   end
 end
 
