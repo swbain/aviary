@@ -73,8 +73,13 @@ function update_crow_action()
   if selected_output_modes[selected_output] == 1 then
     crow.output[selected_output].action = GATE_ACTION
   else
-    crow.output[selected_output].action = "to(0,0.05)"
+    crow.output[selected_output].action = lfo_action()
   end
+end
+
+function lfo_action()
+  local lfo_time = 60 / clock.get_tempo() * selected_divs[selected_output]
+  return "lfo(" .. lfo_time .. ", 5)"
 end
 
 function init_crow() 
