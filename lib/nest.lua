@@ -2,9 +2,9 @@ local nest = {}
 
 local OUTPUTS = 4
 local GATE_ACTION = "{to(5,0),to(0,0.05)}"
+local OUTPUT_MODES = {"clock div", "lfo"}
 
 local selected_output = 1
-local output_modes = {"clock div", "lfo"}
 local selected_output_modes = {1, 1, 1, 1}
 local selected_divs = {1, 1, 1, 1}
 local clock_ids = {}
@@ -15,7 +15,13 @@ function nest.init()
 end
 
 function nest.redraw()
-  screen.clear()
+  nest.redraw(true)
+end
+
+function nest.redraw(clear)
+  if clear then
+    screen.clear()
+  end
   local options = {"out 1", "out 2", "out 3", "out 4"}
   for i = 1, #options do
     screen.level(selected_output == i and 15 or 3)
@@ -23,7 +29,7 @@ function nest.redraw()
     local y = 12 + 10 * i
     
     screen.move(24, y)
-    screen.text_center(output_modes[selected_output_modes[i]])
+    screen.text_center(OUTPUT_MODES[selected_output_modes[i]])
     
     screen.move(64, y)
     screen.text_center(options[i])
@@ -43,7 +49,7 @@ end
 
 function nest.enc(n, d)
   if n == 2 then
-    selected_output_modes[selected_output] = math.min(#output_modes, (math.max(selected_output_modes[selected_output] + d, 1)))
+    selected_output_modes[selected_output] = math.min(#OUTPUT_MODES, (math.max(selected_output_modes[selected_output] + d, 1)))
   elseif n == 3 then
     selected_divs[selected_output] = math.min(32, (math.max(selected_divs[selected_output] + d, 1)))
   end
