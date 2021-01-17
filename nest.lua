@@ -78,8 +78,8 @@ function update_crow_action()
 end
 
 function lfo_action()
-  local lfo_time = 60 / clock.get_tempo() * selected_divs[selected_output]
-  return "lfo(" .. lfo_time .. ", 5)"
+  local time = 60 / (clock.get_tempo() * selected_divs[selected_output])
+  return "{to(5, " .. time / 2 .. "), to(-5, " .. time / 2 .. ")}"
 end
 
 function init_crow() 
