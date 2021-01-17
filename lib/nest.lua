@@ -1,31 +1,22 @@
--- nest
--- @pavlovsfrog
---
--- utilities for norns + crow
--- use crow outputs for
--- clock div and lfos
--- 
--- btn 2: select crow output
--- enc 2: select output type
--- enc 3: select rate
+local nest = {}
 
-OUTPUTS = 4
+local OUTPUTS = 4
 
-GATE_ACTION = "{to(5,0),to(0,0.05)}"
+local GATE_ACTION = "{to(5,0),to(0,0.05)}"
 
-selected_output = 1
+local selected_output = 1
 
-output_modes = {"clock div", "lfo"}
+local output_modes = {"clock div", "lfo"}
 
-selected_output_modes = {1, 1, 1, 1}
+local selected_output_modes = {1, 1, 1, 1}
 
-div_values = {}
+local div_values = {}
 
-selected_divs = {1, 1, 1, 1}
+local selected_divs = {1, 1, 1, 1}
 
-clock_ids = {}
+local clock_ids = {}
 
-function init()
+function nest.init()
   for i = 1, 32 do
     div_values[i] = i
   end
@@ -34,7 +25,7 @@ function init()
   init_clock()
 end
 
-function redraw()
+function nest.redraw()
   screen.clear()
   local options = {"out 1", "out 2", "out 3", "out 4"}
   for i = 1, #options do
@@ -54,14 +45,14 @@ function redraw()
   screen.update()
 end
 
-function key(n, z)
+function nest.key(n, z)
   if n == 2 and z == 1 then
     selected_output = selected_output % 4 + 1
     redraw()
   end
 end
 
-function enc(n, d)
+function nest.enc(n, d)
   if n == 2 then
     selected_output_modes[selected_output] = math.min(#output_modes, (math.max(selected_output_modes[selected_output] + d, 1)))
   elseif n == 3 then
@@ -104,3 +95,5 @@ function run_clock(output)
     crow.output[output].execute()
   end
 end
+
+return nest
