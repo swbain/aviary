@@ -16,6 +16,7 @@ function init()
 end
 
 function redraw()
+  screen.clear()
   nest.redraw()
 end
 
