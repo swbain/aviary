@@ -4,10 +4,11 @@ local OUTPUTS = 4
 local PAGES = 2
 local GATE_ACTION = "{to(5,0),to(0,0.05)}"
 local CLOCK_DIV = "clock div"
+local CLOCK_MULT = "clock mult"
 local LFO = "lfo"
 local MIN_VOLTAGE = "min voltage"
 local MAX_VOLTAGE = "max voltage"
-local OUTPUT_MODES = {CLOCK_DIV, LFO}
+local OUTPUT_MODES = {CLOCK_DIV, CLOCK_MULT, LFO}
 local LFO_PARAMS = {MIN_VOLTAGE, MAX_VOLTAGE}
 
 local selected_output = 1
@@ -101,7 +102,7 @@ function nest.enc(n, d)
 end
 
 function update_crow_action()
-  if selected_output_modes[selected_output] == 1 then
+  if selected_output_modes[selected_output] == 1 or selected_output_modes[selected_output] == 2 then
     crow.output[selected_output].action = GATE_ACTION
   else
     crow.output[selected_output].action = lfo_action()
@@ -127,7 +128,11 @@ end
 
 function run_clock(output)
   while true do
-    clock.sync(selected_divs[output])
+    if selected_output_modes[selected_output] == 2 then
+      clock.sync(1 / selected_divs[output])
+    else
+      clock.sync(selected_divs[output])
+    end
     crow.output[output].execute()
   end
 end
