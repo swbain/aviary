@@ -27,7 +27,7 @@ end
 function init_params()
   for i = 1, 4 do
     params:add_group("crow out " .. i, 2)
-    params:add{type = "option", id = "type_" .. i, name = "type", options = OUTPUT_MODES}
+    params:add_option("type_" .. i, "type", OUTPUT_MODES)
     params:add{type = "number", id = "rate_" ..i, name = "rate", min = 1, max = 32, default = 1}
   end
 end
@@ -117,7 +117,7 @@ function update_crow_action()
 end
 
 function lfo_action()
-  local time = 60 / (clock.get_tempo() / selected_divs[selected_output])
+  local time = 60 / (clock.get_tempo() / params:get("rate_" .. selected_output))
   return "{to(" .. max_voltages[selected_output] .. ", " .. time / 2 .. "), to(" .. min_voltages[selected_output] .. ", " .. time / 2 .. ")}"
 end
 
