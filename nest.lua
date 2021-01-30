@@ -28,7 +28,7 @@ function init_params()
   for i = 1, 4 do
     params:add_group("crow out " .. i, 2)
     params:add_option("type_" .. i, "type", OUTPUT_MODES)
-    params:add{type = "number", id = "rate_" ..i, name = "rate", min = 1, max = 32, default = 1}
+    params:add_number("rate" .. i, "rate", 1, 32, 1)
   end
 end
 
