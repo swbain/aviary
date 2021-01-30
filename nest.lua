@@ -12,7 +12,6 @@ local OUTPUT_MODES = {CLOCK_DIV, CLOCK_MULT, LFO}
 local LFO_PARAMS = {MIN_VOLTAGE, MAX_VOLTAGE}
 
 local selected_output = 1
-local selected_output_modes = {1, 1, 1, 1}
 local selected_divs = {1, 1, 1, 1}
 local clock_ids = {}
 local selected_lfo_params = {1, 1, 1, 1}
@@ -21,8 +20,16 @@ local min_voltages = {-5.0, -5.0, -5.0, -5.0}
 local max_voltages = {5.0, 5.0, 5.0, 5.0}
 
 function nest.init()
+  init_params()
   init_crow()
   init_clock()
+end
+
+function init_params()
+  for i = 1, 4 do
+    params:add_group("crow out " .. i, 1)
+    params:add{type = "option", id = "type_" .. i, name = "type", options = OUTPUT_MODES}
+  end
 end
 
 function nest.redraw()
@@ -34,8 +41,8 @@ function nest.redraw()
     
     screen.move(24, y)
     if selected_page == 1 then
-      screen.text_center(OUTPUT_MODES[selected_output_modes[i]])
-    elseif OUTPUT_MODES[selected_output_modes[i]] == LFO then
+      screen.text_center(OUTPUT_MODES[params:get("type_" .. i)])
+    elseif OUTPUT_MODES[params:get("type_" .. i)] == LFO then
       screen.text_center(LFO_PARAMS[selected_lfo_params[i]])
     else
       screen.text_center("-")
@@ -47,7 +54,7 @@ function nest.redraw()
     screen.move(104, y)
     if selected_page == 1 then
       screen.text_center(selected_divs[i])
-    elseif OUTPUT_MODES[selected_output_modes[i]] == LFO then
+    elseif OUTPUT_MODES[params:get("type_" .. i)] == LFO then
       if LFO_PARAMS[selected_lfo_params[i]] == MIN_VOLTAGE then
         screen.text_center(min_voltages[i] .. "V")
       else
@@ -73,9 +80,9 @@ function nest.enc(n, d)
   local restart_crow_action = true
   if n == 2 then
     if selected_page == 1 then
-      selected_output_modes[selected_output] = math.min(#OUTPUT_MODES, (math.max(selected_output_modes[selected_output] + d, 1)))
+      params:delta("type_" .. selected_output, d)
     else
-      if OUTPUT_MODES[selected_output_modes[selected_output]] == LFO then
+      if OUTPUT_MODES[params:get("type_" .. selected_output)] == LFO then
         selected_lfo_params[selected_output] = math.min(#LFO_PARAMS, (math.max(selected_lfo_params[selected_output] + d, 1)))
       end
       restart_crow_action = false
@@ -83,7 +90,7 @@ function nest.enc(n, d)
   elseif n == 3 then
     if selected_page == 1 then
       selected_divs[selected_output] = math.min(32, (math.max(selected_divs[selected_output] + d, 1)))
-    elseif OUTPUT_MODES[selected_output_modes[selected_output]] == LFO then
+    elseif OUTPUT_MODES[params:get("type_" .. selected_output)] == LFO then
       if LFO_PARAMS[selected_lfo_params[selected_output]] == MIN_VOLTAGE then
         local min_voltage = util.clamp(min_voltages[selected_output] + (d * 0.01), -5.0, 10.0)
         min_voltages[selected_output]= util.round(min_voltage, 0.001)
@@ -102,7 +109,7 @@ function nest.enc(n, d)
 end
 
 function update_crow_action()
-  if selected_output_modes[selected_output] == 1 or selected_output_modes[selected_output] == 2 then
+  if params:get("type_" .. selected_output) == 1 or params:get("type_" .. selected_output) == 2 then
     crow.output[selected_output].action = GATE_ACTION
   else
     crow.output[selected_output].action = lfo_action()
@@ -128,7 +135,7 @@ end
 
 function run_clock(output)
   while true do
-    if selected_output_modes[selected_output] == 2 then
+    if params:get("type_" .. selected_output) == 2 then
       clock.sync(1 / selected_divs[output])
     else
       clock.sync(selected_divs[output])
