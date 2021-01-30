@@ -1,5 +1,7 @@
 local nest = {}
 
+local formatters = require('formatters')
+
 local OUTPUTS = 4
 local PAGES = 2
 local GATE_ACTION = "{to(5,0),to(0,0.05)}"
@@ -15,8 +17,6 @@ local selected_output = 1
 local clock_ids = {}
 local selected_lfo_params = {1, 1, 1, 1}
 local selected_page = 1
-local min_voltages = {-5.0, -5.0, -5.0, -5.0}
-local max_voltages = {5.0, 5.0, 5.0, 5.0}
 
 function nest.init()
   init_params()
@@ -26,9 +26,11 @@ end
 
 function init_params()
   for i = 1, 4 do
-    params:add_group("crow out " .. i, 2)
+    params:add_group("crow out " .. i, 4)
     params:add_option("type_" .. i, "type", OUTPUT_MODES)
     params:add_number("rate_" .. i, "rate", 1, 32, 1)
+    params:add_control("min_volts_" .. i, "lfo min voltage", controlspec.new(-5.00, 10.00, "lin", 0.01, -5.00, "V", 0.01 / 15))
+    params:add_control("max_volts_" .. i, "lfo max voltage", controlspec.new(-5.00, 10.00, "lin", 0.01, 10.00, "V", 0.01 / 15))
   end
 end
 
@@ -56,9 +58,9 @@ function nest.redraw()
       screen.text_center(params:get("rate_" .. i))
     elseif OUTPUT_MODES[params:get("type_" .. i)] == LFO then
       if LFO_PARAMS[selected_lfo_params[i]] == MIN_VOLTAGE then
-        screen.text_center(min_voltages[i] .. "V")
+        screen.text_center(params:get("min_volts_" .. i) .. "V")
       else
-        screen.text_center(max_voltages[i] .. "V")
+        screen.text_center(params:get("max_volts_" .. i) .. "V")
       end
     else
       screen.text_center("-")
@@ -92,11 +94,9 @@ function nest.enc(n, d)
       params:delta("rate_" .. selected_output, d)
     elseif OUTPUT_MODES[params:get("type_" .. selected_output)] == LFO then
       if LFO_PARAMS[selected_lfo_params[selected_output]] == MIN_VOLTAGE then
-        local min_voltage = util.clamp(min_voltages[selected_output] + (d * 0.01), -5.0, 10.0)
-        min_voltages[selected_output]= util.round(min_voltage, 0.001)
+        params:delta("min_volts_" .. selected_output, d)
       else
-        local max_voltage = util.clamp(max_voltages[selected_output] + (d * 0.01), -5.0, 10.0)
-        max_voltages[selected_output] = util.round(max_voltage, 0.001)
+        params:delta("max_volts_" .. selected_output, d)
       end
     end
   end
@@ -118,7 +118,7 @@ end
 
 function lfo_action()
   local time = 60 / (clock.get_tempo() / params:get("rate_" .. selected_output))
-  return "{to(" .. max_voltages[selected_output] .. ", " .. time / 2 .. "), to(" .. min_voltages[selected_output] .. ", " .. time / 2 .. ")}"
+  return "{to(" .. params:get("max_volts_" .. selected_output) .. ", " .. time / 2 .. "), to(" .. params:get("min_volts_" .. selected_output) .. ", " .. time / 2 .. ")}"
 end
 
 function init_crow() 
