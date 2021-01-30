@@ -12,7 +12,6 @@ local OUTPUT_MODES = {CLOCK_DIV, CLOCK_MULT, LFO}
 local LFO_PARAMS = {MIN_VOLTAGE, MAX_VOLTAGE}
 
 local selected_output = 1
--- local selected_divs = {1, 1, 1, 1}
 local clock_ids = {}
 local selected_lfo_params = {1, 1, 1, 1}
 local selected_page = 1
