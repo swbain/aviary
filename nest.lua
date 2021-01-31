@@ -28,9 +28,13 @@ function init_params()
   for i = 1, 4 do
     params:add_group("crow out " .. i, 4)
     params:add_option("type_" .. i, "type", OUTPUT_MODES)
+    params:set_action("type_" .. i, function () refresh_crow(i) end)
     params:add_number("rate_" .. i, "rate", 1, 32, 1)
+    params:set_action("rate_" .. i, function () refresh_crow(i) end)
     params:add_control("min_volts_" .. i, "lfo min voltage", controlspec.new(-5.00, 10.00, "lin", 0.01, -5.00, "V", 0.01 / 15))
-    params:add_control("max_volts_" .. i, "lfo max voltage", controlspec.new(-5.00, 10.00, "lin", 0.01, 10.00, "V", 0.01 / 15))
+    params:set_action("min_volts_" .. i, function () refresh_crow(i) end)
+    params:add_control("max_volts_" .. i, "lfo max voltage", controlspec.new(-5.00, 10.00, "lin", 0.01, 5.00, "V", 0.01 / 15))
+    params:set_action("max_volts_" .. i, function () refresh_crow(i) end)
   end
 end
 
@@ -87,7 +91,6 @@ function nest.enc(n, d)
       if OUTPUT_MODES[params:get("type_" .. selected_output)] == LFO then
         selected_lfo_params[selected_output] = math.min(#LFO_PARAMS, (math.max(selected_lfo_params[selected_output] + d, 1)))
       end
-      restart_crow_action = false
     end
   elseif n == 3 then
     if selected_page == 1 then
@@ -100,25 +103,27 @@ function nest.enc(n, d)
       end
     end
   end
-  update_crow_action()
-  if restart_crow_action then
-    clock.cancel(clock_ids[selected_output])
-    clock_ids[selected_output] = clock.run(run_clock, selected_output)
-  end
+  
   redraw()
 end
 
-function update_crow_action()
-  if params:get("type_" .. selected_output) == 1 or params:get("type_" .. selected_output) == 2 then
-    crow.output[selected_output].action = GATE_ACTION
+function refresh_crow(output)
+  update_crow_action(output)
+  clock.cancel(clock_ids[output])
+  clock_ids[output] = clock.run(run_clock, output)
+end
+
+function update_crow_action(output)
+  if params:get("type_" .. output) == 1 or params:get("type_" .. output) == 2 then
+    crow.output[output].action = GATE_ACTION
   else
-    crow.output[selected_output].action = lfo_action()
+    crow.output[output].action = lfo_action(output)
   end
 end
 
-function lfo_action()
-  local time = 60 / (clock.get_tempo() / params:get("rate_" .. selected_output))
-  return "{to(" .. params:get("max_volts_" .. selected_output) .. ", " .. time / 2 .. "), to(" .. params:get("min_volts_" .. selected_output) .. ", " .. time / 2 .. ")}"
+function lfo_action(output)
+  local time = 60 / (clock.get_tempo() / params:get("rate_" .. output))
+  return "{to(" .. params:get("max_volts_" .. output) .. ", " .. time / 2 .. "), to(" .. params:get("min_volts_" .. output) .. ", " .. time / 2 .. ")}"
 end
 
 function init_crow() 
@@ -135,7 +140,7 @@ end
 
 function run_clock(output)
   while true do
-    if params:get("type_" .. selected_output) == 2 then
+    if params:get("type_" .. output) == 2 then
       clock.sync(1 / params:get("rate_" .. output))
     else
       clock.sync(params:get("rate_" .. output))
