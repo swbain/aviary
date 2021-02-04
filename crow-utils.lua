@@ -1,4 +1,4 @@
-local nest = {}
+local crow-utils = {}
 
 local formatters = require('formatters')
 
@@ -18,7 +18,7 @@ local clock_ids = {}
 local selected_lfo_params = {1, 1, 1, 1}
 local selected_page = 1
 
-function nest.init()
+function crow-utils.init()
   init_params()
   init_crow()
   init_clock()
@@ -38,13 +38,13 @@ function init_params()
   end
 end
 
-function nest.redraw()
+function crow-utils.redraw()
   local options = {"out 1", "out 2", "out 3", "out 4"}
   for i = 1, #options do
     screen.level(selected_output == i and 15 or 3)
-    
+
     local y = 12 + 10 * i
-    
+
     screen.move(24, y)
     if selected_page == 1 then
       screen.text_center(OUTPUT_MODES[params:get("type_" .. i)])
@@ -53,10 +53,10 @@ function nest.redraw()
     else
       screen.text_center("-")
     end
-    
+
     screen.move(64, y)
     screen.text_center(options[i])
-    
+
     screen.move(104, y)
     if selected_page == 1 then
       screen.text_center(params:get("rate_" .. i))
@@ -73,7 +73,7 @@ function nest.redraw()
   screen.update()
 end
 
-function nest.key(n, z)
+function crow-utils.key(n, z)
   if n == 2 and z == 1 then
     selected_output = selected_output % OUTPUTS + 1
   elseif n == 3 and z == 1 then
@@ -82,7 +82,7 @@ function nest.key(n, z)
   redraw()
 end
 
-function nest.enc(n, d)
+function crow-utils.enc(n, d)
   local restart_crow_action = true
   if n == 2 then
     if selected_page == 1 then
@@ -103,7 +103,7 @@ function nest.enc(n, d)
       end
     end
   end
-  
+
   redraw()
 end
 
@@ -126,7 +126,7 @@ function lfo_action(output)
   return "{to(" .. params:get("max_volts_" .. output) .. ", " .. time / 2 .. "), to(" .. params:get("min_volts_" .. output) .. ", " .. time / 2 .. ")}"
 end
 
-function init_crow() 
+function init_crow()
   for i = 1, OUTPUTS do
     crow.output[i].action = GATE_ACTION
   end
@@ -149,4 +149,4 @@ function run_clock(output)
   end
 end
 
-return nest
+return crow-utils
