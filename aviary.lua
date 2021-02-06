@@ -19,9 +19,11 @@ local selected_lfo_params = {1, 1, 1, 1}
 local selected_page = 1
 
 function aviary.init()
-  init_params()
-  init_crow()
-  init_clock()
+  if (crow.connected()) then
+    init_params()
+    init_crow()
+    init_clock()
+  end
 end
 
 function init_params()
