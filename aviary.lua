@@ -1,4 +1,4 @@
-local crow-utils = {}
+local aviary = {}
 
 local formatters = require('formatters')
 
@@ -18,7 +18,7 @@ local clock_ids = {}
 local selected_lfo_params = {1, 1, 1, 1}
 local selected_page = 1
 
-function crow-utils.init()
+function aviary.init()
   init_params()
   init_crow()
   init_clock()
@@ -38,7 +38,7 @@ function init_params()
   end
 end
 
-function crow-utils.redraw()
+function aviary.redraw()
   local options = {"out 1", "out 2", "out 3", "out 4"}
   for i = 1, #options do
     screen.level(selected_output == i and 15 or 3)
@@ -73,7 +73,7 @@ function crow-utils.redraw()
   screen.update()
 end
 
-function crow-utils.key(n, z)
+function aviary.key(n, z)
   if n == 2 and z == 1 then
     selected_output = selected_output % OUTPUTS + 1
   elseif n == 3 and z == 1 then
@@ -82,7 +82,7 @@ function crow-utils.key(n, z)
   redraw()
 end
 
-function crow-utils.enc(n, d)
+function aviary.enc(n, d)
   local restart_crow_action = true
   if n == 2 then
     if selected_page == 1 then
@@ -149,4 +149,4 @@ function run_clock(output)
   end
 end
 
-return crow-utils
+return aviary
