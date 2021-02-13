@@ -1,5 +1,7 @@
 # aviary
 
+[![GPLv3 License](https://img.shields.io/github/license/swbain/aviary)](https://opensource.org/licenses/)
+
 utility library for monome [norns](https://monome.org/docs/norns/) + [crow](https://monome.org/docs/crow/).
 
 utilize crow's four cv outputs for clock or modulation. each output can either send out a clock division or an lfo. `aviary.init()` initializes the library and adds items to the parameters menu for crow control. optionally, library consumers can add a simple ui by utilizing `aviary.redraw()`, `aviary.key(n, z)`, and `aviary.enc(n, d)` where appropriate. this should be a relatively easy addition to scripts utilizing a page based UI, but is totally optional -- all functionality can be accessed inside of the parameters menu. controls for the ui are listed below.
