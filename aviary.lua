@@ -10,8 +10,10 @@ local CLOCK_MULT = "clock mult"
 local LFO = "lfo"
 local MIN_VOLTAGE = "min voltage"
 local MAX_VOLTAGE = "max voltage"
+local LFO_SHAPE = "lfo shape"
 local OUTPUT_MODES = {CLOCK_DIV, CLOCK_MULT, LFO}
-local LFO_PARAMS = {MIN_VOLTAGE, MAX_VOLTAGE}
+local LFO_PARAMS = {MIN_VOLTAGE, MAX_VOLTAGE, LFO_SHAPE}
+local LFO_SHAPES = {"linear", "sine", "logarithmic", "exponential"}
 
 local selected_output = 1
 local clock_ids = {}
@@ -28,7 +30,7 @@ end
 
 function init_params()
   for i = 1, 4 do
-    params:add_group("crow out " .. i, 4)
+    params:add_group("crow out " .. i, 5)
     params:add_option("type_" .. i, "type", OUTPUT_MODES)
     params:set_action("type_" .. i, function () refresh_crow(i) end)
     params:add_number("rate_" .. i, "rate", 1, 32, 1)
@@ -37,10 +39,21 @@ function init_params()
     params:set_action("min_volts_" .. i, function () refresh_crow(i) end)
     params:add_control("max_volts_" .. i, "lfo max voltage", controlspec.new(-5.00, 10.00, "lin", 0.01, 5.00, "V", 0.01 / 15))
     params:set_action("max_volts_" .. i, function () refresh_crow(i) end)
+    params:add_option("lfo_shape_" .. i, "lfo shape", LFO_SHAPES)
+    params:set_action("lfo_shape_" .. i, function () refresh_crow(i) end)
   end
 end
 
 function aviary.redraw()
+  if (crow.connected()) then
+    redraw_connected()
+  else
+    redraw_disconnected()
+  end
+  screen.update()
+end
+
+function redraw_connected()
   local options = {"out 1", "out 2", "out 3", "out 4"}
   for i = 1, #options do
     screen.level(selected_output == i and 15 or 3)
@@ -65,14 +78,20 @@ function aviary.redraw()
     elseif OUTPUT_MODES[params:get("type_" .. i)] == LFO then
       if LFO_PARAMS[selected_lfo_params[i]] == MIN_VOLTAGE then
         screen.text_center(params:get("min_volts_" .. i) .. "V")
-      else
+      elseif LFO_PARAMS[selected_lfo_params[i]] == MAX_VOLTAGE then
         screen.text_center(params:get("max_volts_" .. i) .. "V")
+      else
+        screen.text_center(LFO_SHAPES[params:get("lfo_shape_" .. i)])
       end
     else
       screen.text_center("-")
     end
   end
-  screen.update()
+end
+
+function redraw_disconnected()
+  screen.move(64, 32)
+  screen.text_center("no crow connected")
 end
 
 function aviary.key(n, z)
@@ -100,8 +119,10 @@ function aviary.enc(n, d)
     elseif OUTPUT_MODES[params:get("type_" .. selected_output)] == LFO then
       if LFO_PARAMS[selected_lfo_params[selected_output]] == MIN_VOLTAGE then
         params:delta("min_volts_" .. selected_output, d)
-      else
+      elseif LFO_PARAMS[selected_lfo_params[selected_output]] == MAX_VOLTAGE then
         params:delta("max_volts_" .. selected_output, d)
+      else
+        params:delta("lfo_shape_" .. selected_output, d)
       end
     end
   end
@@ -125,7 +146,7 @@ end
 
 function lfo_action(output)
   local time = 60 / (clock.get_tempo() / params:get("rate_" .. output))
-  return "{to(" .. params:get("max_volts_" .. output) .. ", " .. time / 2 .. "), to(" .. params:get("min_volts_" .. output) .. ", " .. time / 2 .. ")}"
+  return "{to(" .. params:get("max_volts_" .. output) .. ", " .. time / 2 .. ", " .. params:get("lfo_shape_" .. output) .."), to(" .. params:get("min_volts_" .. output) .. ", " .. time / 2 .. ", " .. params:get("lfo_shape_" .. output) ..")}"
 end
 
 function init_crow()
