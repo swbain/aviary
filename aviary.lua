@@ -8,9 +8,10 @@ local GATE_ACTION = "{to(5,0),to(0,0.05)}"
 local CLOCK_DIV = "clock div"
 local CLOCK_MULT = "clock mult"
 local LFO = "lfo"
+local STATIC = "static v"
 local LFO_LEVEL = "lfo level"
 local LFO_SHAPE = "lfo shape"
-local OUTPUT_MODES = {CLOCK_DIV, CLOCK_MULT, LFO}
+local OUTPUT_MODES = {CLOCK_DIV, CLOCK_MULT, LFO, STATIC}
 local LFO_PARAMS = {LFO_LEVEL, LFO_SHAPE}
 local LFO_SHAPES = {"linear", "sine", "logarithmic", "exponential"}
 
@@ -29,15 +30,17 @@ end
 
 function init_params()
   for i = 1, 4 do
-    params:add_group("crow out " .. i, 4)
+    params:add_group("crow out " .. i, 5)
     params:add_option("type_" .. i, "type", OUTPUT_MODES)
     params:set_action("type_" .. i, function () refresh_crow(i) end)
     params:add_number("rate_" .. i, "rate", 1, 32, 1)
     params:set_action("rate_" .. i, function () refresh_crow(i) end)
-    params:add_control("lfo_level_" ..i, "lfo level", controlspec.new(0.01, 5, "lin", 0.01, 5, "V+-", 0.01 / 15))
+    params:add_control("lfo_level_" ..i, "lfo level", controlspec.new(0.01, 5, "lin", 0.01, 5, "V+-", 0.01 / 10))
     params:set_action("lfo_level_" .. i, function () refresh_crow(i) end)
     params:add_option("lfo_shape_" .. i, "lfo shape", LFO_SHAPES)
     params:set_action("lfo_shape_" .. i, function () refresh_crow(i) end)
+    params:add_control("static_v_" .. i, "static volts", controlspec.new(-5, 10, "lin", 0.01, 5, "V", 0.01 / 15))
+    params:set_action("static_v_" .. i, function () refresh_crow(i) end)
   end
 end
 
@@ -71,7 +74,11 @@ function redraw_connected()
 
     screen.move(104, y)
     if selected_page == 1 then
-      screen.text_center(params:get("rate_" .. i))
+      if OUTPUT_MODES[params:get("type_" ..i)] == STATIC then
+        screen.text_center(params:get("static_v_" .. i) .. "V")
+      else
+        screen.text_center(params:get("rate_" .. i))
+      end
     elseif OUTPUT_MODES[params:get("type_" .. i)] == LFO then
       if LFO_PARAMS[selected_lfo_params[i]] == LFO_LEVEL then
         screen.text_center("+-" .. params:get("lfo_level_" .. i) .. "V")
@@ -110,7 +117,11 @@ function aviary.enc(n, d)
     end
   elseif n == 3 then
     if selected_page == 1 then
-      params:delta("rate_" .. selected_output, d)
+      if OUTPUT_MODES[params:get("type_" .. selected_output)] == STATIC then
+        params:delta("static_v_" .. selected_output, d)
+      else
+        params:delta("rate_" .. selected_output, d)
+      end
     elseif OUTPUT_MODES[params:get("type_" .. selected_output)] == LFO then
       if LFO_PARAMS[selected_lfo_params[selected_output]] == LFO_LEVEL then
         params:delta("lfo_level_" .. selected_output, d)
@@ -132,8 +143,10 @@ end
 function update_crow_action(output)
   if params:get("type_" .. output) == 1 or params:get("type_" .. output) == 2 then
     crow.output[output].action = GATE_ACTION
-  else
+  elseif params:get("type_" .. output) == 3 then
     crow.output[output].action = lfo_action(output)
+  else
+    crow.output[output].volts = params:get("static_v_" .. output)
   end
 end
 
