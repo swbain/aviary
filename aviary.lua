@@ -20,11 +20,14 @@ local clock_ids = {}
 local selected_lfo_params = {1, 1, 1, 1}
 local selected_page = 1
 
+local initialized = false
+
 function aviary.init()
   if (crow.connected()) then
     init_params()
     init_crow()
     init_clock()
+    initialized = true
   end
 end
 
@@ -97,7 +100,9 @@ function redraw_disconnected()
 end
 
 function aviary.key(n, z)
-  if n == 2 and z == 1 then
+  if initialized == false then
+    init()
+  elseif n == 2 and z == 1 then
     selected_output = selected_output % OUTPUTS + 1
   elseif n == 3 and z == 1 then
     selected_page = selected_page % PAGES + 1
