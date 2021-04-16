@@ -13,5 +13,3 @@ utilize crow's four cv outputs for clock or modulation. each output can either s
 * page 2, lfo on selected output
     - enc 2: select lfo param (lfo level up to +-5V, lfo shape)
     - enc 3: set voltage
-
-example of how to add to an existing norns project at the [aviary-demo](https://github.com/swbain/aviary-demo) repo
